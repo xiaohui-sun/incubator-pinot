@@ -34,13 +34,16 @@ import com.linkedin.pinot.core.plan.maker.InstancePlanMakerImplV2;
 import com.linkedin.pinot.core.plan.maker.PlanMaker;
 import com.linkedin.pinot.core.query.config.QueryExecutorConfig;
 import com.linkedin.pinot.core.query.exception.BadQueryRequestException;
+import com.linkedin.pinot.core.query.pruner.DataSchemaSegmentPruner;
 import com.linkedin.pinot.core.query.pruner.SegmentPrunerService;
 import com.linkedin.pinot.core.query.request.ServerQueryRequest;
 import com.linkedin.pinot.core.query.request.context.TimerContext;
 import com.linkedin.pinot.core.util.trace.TraceContext;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import javax.annotation.concurrent.ThreadSafe;
@@ -204,7 +207,8 @@ public class ServerQueryExecutorV1Impl implements QueryExecutor {
    */
   private long pruneSegments(TableDataManager tableDataManager, List<SegmentDataManager> segmentDataManagers,
       ServerQueryRequest serverQueryRequest) {
-    long totalRawDocs = 0;
+    Set<String> pruningReasons = new HashSet<>();
+    long totalRawDocs = 0L;
 
     Iterator<SegmentDataManager> iterator = segmentDataManagers.iterator();
     while (iterator.hasNext()) {
@@ -212,9 +216,25 @@ public class ServerQueryExecutorV1Impl implements QueryExecutor {
       IndexSegment indexSegment = segmentDataManager.getSegment();
       // We need to compute the total raw docs for the table before any pruning.
       totalRawDocs += indexSegment.getSegmentMetadata().getTotalRawDocs();
-      if (_segmentPrunerService.prune(indexSegment, serverQueryRequest)) {
+      String pruningReason = _segmentPrunerService.matchPruningCriterion(indexSegment, serverQueryRequest);
+      if (pruningReason != null) {
+        pruningReasons.add(pruningReason);
         iterator.remove();
         tableDataManager.releaseSegment(segmentDataManager);
+      }
+    }
+
+    if (segmentDataManagers.isEmpty() && !pruningReasons.isEmpty()) {
+      for (String pruningReason : pruningReasons) {
+        switch (pruningReason) {
+          case "DataSchemaSegmentPruner":
+            LOGGER.info("Request:{} is querying non-existing columns on Table {}! Query columns:{}",
+                serverQueryRequest.getRequestId(), serverQueryRequest.getTableNameWithType(), serverQueryRequest.getAllColumns());
+            _serverMetrics.addMeteredTableValue(tableDataManager.getTableName(), ServerMeter.QUERY_NON_EXISTING_COLUMNS, 1L);
+            break;
+          default:
+            break;
+        }
       }
     }
 

@@ -15,6 +15,7 @@
  */
 package com.linkedin.pinot.query.executor;
 
+import com.linkedin.pinot.common.metrics.ServerMeter;
 import com.linkedin.pinot.common.metrics.ServerMetrics;
 import com.linkedin.pinot.common.request.InstanceRequest;
 import com.linkedin.pinot.common.segment.ReadMode;
@@ -111,6 +112,37 @@ public class QueryExecutorTest {
     queryExecutorConfig.load(new File(resourceUrl.getFile()));
     _queryExecutor = new ServerQueryExecutorV1Impl();
     _queryExecutor.init(queryExecutorConfig, instanceDataManager, _serverMetrics);
+  }
+
+  @Test
+  public void testQueryWithNonExistingColumn() {
+    long count = _serverMetrics.getMeteredTableValue(TABLE_NAME, ServerMeter.QUERY_NON_EXISTING_COLUMNS).count();
+    long[] warningCount = new long[]{count};
+
+    // Selection
+    String query = "SELECT nonExistingColumn FROM " + TABLE_NAME;
+    testWithNonExistingColumn(query, warningCount);
+
+    // Sum
+    query = "SELECT SUM(nonExistingColumn) FROM " + TABLE_NAME;
+    testWithNonExistingColumn(query, warningCount);
+
+    // Max
+    query = "SELECT MAX(nonExistingColumn) FROM " + TABLE_NAME;
+    testWithNonExistingColumn(query, warningCount);
+
+    // Min
+    query = "SELECT MIN(nonExistingColumn) FROM " + TABLE_NAME;
+    testWithNonExistingColumn(query, warningCount);
+  }
+
+  private void testWithNonExistingColumn(String query, long[] previousCount) {
+    InstanceRequest instanceRequest = new InstanceRequest(0L, COMPILER.compileToBrokerRequest(query));
+    instanceRequest.setSearchSegments(_segmentNames);
+    _queryExecutor.processQuery(getQueryRequest(instanceRequest), QUERY_RUNNERS);
+    long warningCount = _serverMetrics.getMeteredTableValue(TABLE_NAME, ServerMeter.QUERY_NON_EXISTING_COLUMNS).count();
+    Assert.assertTrue(warningCount > previousCount[0]);
+    previousCount[0] = warningCount;
   }
 
   @Test

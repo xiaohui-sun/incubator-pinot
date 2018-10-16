@@ -44,15 +44,15 @@ public class SegmentPrunerService {
   }
 
   /**
-   * Returns <code>true</code> if the segment can be pruned based on the query request.
+   * Returns the name of the pruner if the segment can be pruned based on the query request. Otherwise, returns null.
    */
-  public boolean prune(IndexSegment segment, ServerQueryRequest queryRequest) {
+  public String matchPruningCriterion(IndexSegment segment, ServerQueryRequest queryRequest) {
     for (SegmentPruner segmentPruner : _segmentPruners) {
       if (segmentPruner.prune(segment, queryRequest)) {
         LOGGER.debug("Pruned segment: {}", segment.getSegmentName());
-        return true;
+        return segmentPruner.toString();
       }
     }
-    return false;
+    return null;
   }
 }
