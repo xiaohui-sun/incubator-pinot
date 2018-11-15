@@ -28,14 +28,22 @@ public class DurationDsl implements SingleKeyDsl<Duration> {
       return null;
     }
 
-    String[] parts = text.split(" ");
-    final String unit = parts[1].toUpperCase();
-    final String unitCount = parts[0];
-    return new Duration(TimeUnit.valueOf(unit), Integer.parseInt(unitCount));
+    try {
+      String[] parts = text.split(" ");
+      final String unit = parts[1].toUpperCase();
+      final String unitCount = parts[0];
+      return new Duration(TimeUnit.valueOf(unit), Integer.parseInt(unitCount));
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   @Override
   public String unparse(Duration value) {
-    return value.getUnitCount() + " " + value.getUnit();
+    if (value != null) {
+      return value.getUnitCount() + " " + value.getUnit();
+    } else {
+      return null;
+    }
   }
 }
