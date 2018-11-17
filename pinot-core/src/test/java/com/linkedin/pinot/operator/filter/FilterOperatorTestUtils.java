@@ -65,6 +65,11 @@ public class FilterOperatorTestUtils {
           }
 
           @Override
+          public long getNumIndicesLoaded() {
+            return 0;
+          }
+
+          @Override
           public BlockDocIdIterator iterator() {
             return new ArrayBasedDocIdIterator(docIds, docIds.length);
           }
