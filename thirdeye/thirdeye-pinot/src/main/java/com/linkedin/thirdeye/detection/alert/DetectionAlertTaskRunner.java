@@ -132,7 +132,12 @@ public class DetectionAlertTaskRunner implements TaskRunner {
 
       updateAlertConfigWatermarks(result, alertConfig);
       return new ArrayList<>();
-    } finally {
+    } catch (Exception e) {
+      LOG.error("Exception while executing alert task", e);
+      ThirdeyeMetricsUtil.alertTaskExceptionCounter.inc();
+      throw(e);
+    }
+    finally {
       ThirdeyeMetricsUtil.alertTaskSuccessCounter.inc();
     }
   }

@@ -124,6 +124,7 @@ public class DetectionPipelineTaskRunner implements TaskRunner {
       return Collections.emptyList();
 
     } catch(Exception e) {
+      LOG.error("Exception while executing detection task", e);
       ThirdeyeMetricsUtil.detectionTaskExceptionCounter.inc();
       throw e;
 

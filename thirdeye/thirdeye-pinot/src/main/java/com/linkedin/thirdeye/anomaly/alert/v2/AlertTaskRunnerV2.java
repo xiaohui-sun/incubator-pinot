@@ -159,11 +159,13 @@ public class AlertTaskRunnerV2 implements TaskRunner {
   private void runTask() throws Exception {
     ThirdeyeMetricsUtil.alertTaskCounter.inc();
     try {
-      LOG.info("Starting email report for id : {}, name : {} ", alertConfig.getId(),
-          alertConfig.getName());
+      LOG.info("Starting email report for id : {}, name : {} ", alertConfig.getId(), alertConfig.getName());
       sendAnomalyReport();
       sendScheduledDataReport();
-
+    } catch (Exception e) {
+      LOG.error("Exception while executing alert task", e);
+      ThirdeyeMetricsUtil.alertTaskExceptionCounter.inc();
+      throw(e);
     } finally {
       ThirdeyeMetricsUtil.alertTaskSuccessCounter.inc();
     }
