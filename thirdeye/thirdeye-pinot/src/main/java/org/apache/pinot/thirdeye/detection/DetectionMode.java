@@ -17,32 +17,16 @@
  * under the License.
  */
 
-package org.apache.pinot.thirdeye.datalayer.dto;
+package org.apache.pinot.thirdeye.detection;
 
-import org.apache.pinot.thirdeye.datalayer.pojo.DetectionConfigBean;
-import org.apache.pinot.thirdeye.detection.DetectionMode;
-import org.apache.pinot.thirdeye.detection.spi.components.BaseComponent;
-import java.util.HashMap;
-import java.util.Map;
-
-
-public class DetectionConfigDTO extends DetectionConfigBean {
-  private Map<String, BaseComponent> components = new HashMap<>();
-
-  public DetectionMode getMode() {
-    return mode;
-  }
-
-  public void setMode(DetectionMode mode) {
-    this.mode = mode;
-  }
-
-  private DetectionMode mode = DetectionMode.NORMAL;
-  public Map<String, BaseComponent> getComponents() {
-    return components;
-  }
-
-  public void setComponents(Map<String, BaseComponent> components) {
-    this.components = components;
-  }
+/**
+ * Detection pipeline run mode.
+ *
+ */
+public enum DetectionMode {
+  NORMAL,
+  // In preview mode:
+  // 1. Do not load existing anomalies for merge.
+  // 2. Do not store generated anomalies.
+  PREVIEW
 }

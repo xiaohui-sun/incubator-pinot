@@ -26,6 +26,7 @@ import org.apache.pinot.thirdeye.detection.DataProvider;
 import org.apache.pinot.thirdeye.detection.DetectionPipeline;
 import org.apache.pinot.thirdeye.detection.DetectionPipelineResult;
 import org.apache.pinot.thirdeye.detection.MockDataProvider;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 import org.apache.pinot.thirdeye.detection.wrapper.AnomalyDetectorWrapper;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import static org.apache.pinot.thirdeye.dataframe.util.DataFrameUtils.*;
 public class ThresholdRuleDetectorTest {
   private DataProvider testDataProvider;
   private DetectionPipeline detectionPipeline;
+  private final double delta = 0.000001;
 
   @BeforeMethod
   public void beforeMethod() throws Exception {
@@ -92,6 +94,15 @@ public class ThresholdRuleDetectorTest {
     Assert.assertEquals(anomalies.get(0).getEndTime(), 2);
     Assert.assertEquals(anomalies.get(1).getStartTime(), 8);
     Assert.assertEquals(anomalies.get(1).getEndTime(), 10);
+
+    DetectionTimeSeries timeSeries = result.getPredictions();
+    double[] upperBound = timeSeries.getPredictedUpperBound().values();
+    double[] lowerBound = timeSeries.getPredictedLowerBound().values();
+    Assert.assertEquals(upperBound.length, lowerBound.length);
+    for (int i = 0; i < upperBound.length; i++) {
+      Assert.assertEquals(upperBound[i], 500.0, delta);
+      Assert.assertEquals(lowerBound[i], 100.0, delta);
+    }
   }
 
 }

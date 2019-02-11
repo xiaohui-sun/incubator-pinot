@@ -22,7 +22,7 @@ package org.apache.pinot.thirdeye.detection.spi.components;
 import org.apache.pinot.thirdeye.dataframe.Series;
 import org.apache.pinot.thirdeye.dataframe.util.MetricSlice;
 import org.apache.pinot.thirdeye.detection.spec.AbstractSpec;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 
 
 /**
@@ -33,7 +33,7 @@ public interface BaselineProvider<T extends AbstractSpec> extends BaseComponent<
    * Compute the baseline time series for the metric slice.
    * @return the time series contains predicted baseline.
    */
-  TimeSeries computePredictedTimeSeries(MetricSlice slice);
+  DetectionTimeSeries computePredictedTimeSeries(MetricSlice slice);
 
   /**
    * Compute the baseline time series for the metric slice.
@@ -41,7 +41,7 @@ public interface BaselineProvider<T extends AbstractSpec> extends BaseComponent<
    * @return the predicted value.
    */
   default Double computePredictedAggregates(MetricSlice slice, Series.DoubleFunction aggregateFunction){
-    TimeSeries baselineTimeSeries = this.computePredictedTimeSeries(slice);
+    DetectionTimeSeries baselineTimeSeries = this.computePredictedTimeSeries(slice);
     return baselineTimeSeries.getPredictedBaseline().aggregate(aggregateFunction).getDouble(0);
   }
 }

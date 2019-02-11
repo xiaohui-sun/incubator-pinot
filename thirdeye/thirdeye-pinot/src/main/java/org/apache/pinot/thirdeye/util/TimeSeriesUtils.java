@@ -59,7 +59,7 @@ public class TimeSeriesUtils {
   }
 
   /**
-   * Convert the given anomaly time lines view to a tuple of TimeSeries, the first one is observed, the second one is expected
+   * Convert the given anomaly time lines view to a tuple of DetectionTimeSeries, the first one is observed, the second one is expected
    * @param anomalyTimelinesView
    * @return
    */

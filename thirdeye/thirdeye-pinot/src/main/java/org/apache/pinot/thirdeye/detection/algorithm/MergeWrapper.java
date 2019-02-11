@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import org.apache.pinot.thirdeye.api.DimensionMap;
 import org.apache.pinot.thirdeye.datalayer.dto.DetectionConfigDTO;
 import org.apache.pinot.thirdeye.datalayer.dto.MergedAnomalyResultDTO;
+import org.apache.pinot.thirdeye.detection.DetectionMode;
 import org.apache.pinot.thirdeye.detection.DetectionUtils;
 import org.apache.pinot.thirdeye.detection.spi.model.AnomalySlice;
 import org.apache.pinot.thirdeye.detection.ConfigUtils;
@@ -134,6 +135,9 @@ public class MergeWrapper extends DetectionPipeline {
   }
 
   protected List<MergedAnomalyResultDTO> retrieveAnomaliesFromDatabase(List<MergedAnomalyResultDTO> generated) {
+    if (mode == DetectionMode.PREVIEW) {
+      return Collections.emptyList();
+    }
     AnomalySlice effectiveSlice = this.slice
         .withStart(this.getStartTime(generated) - this.maxGap - 1)
         .withEnd(this.getEndTime(generated) + this.maxGap + 1);

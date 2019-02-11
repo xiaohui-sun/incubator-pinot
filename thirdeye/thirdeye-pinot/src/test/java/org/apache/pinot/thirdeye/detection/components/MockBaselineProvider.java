@@ -18,11 +18,10 @@ package org.apache.pinot.thirdeye.detection.components;
 
 import org.apache.pinot.thirdeye.dataframe.Series;
 import org.apache.pinot.thirdeye.dataframe.util.MetricSlice;
-import org.apache.pinot.thirdeye.detection.DefaultInputDataFetcher;
 import org.apache.pinot.thirdeye.detection.InputDataFetcher;
 import org.apache.pinot.thirdeye.detection.spec.MockBaselineProviderSpec;
 import org.apache.pinot.thirdeye.detection.spi.components.BaselineProvider;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 
 
 public class MockBaselineProvider implements BaselineProvider<MockBaselineProviderSpec> {
@@ -34,7 +33,7 @@ public class MockBaselineProvider implements BaselineProvider<MockBaselineProvid
   }
 
   @Override
-  public TimeSeries computePredictedTimeSeries(MetricSlice slice) {
+  public DetectionTimeSeries computePredictedTimeSeries(MetricSlice slice) {
     return this.mockSpec.getBaselineTimeseries().get(slice);
   }
 

@@ -26,9 +26,9 @@ import org.apache.pinot.thirdeye.detection.InputDataFetcher;
 import org.apache.pinot.thirdeye.detection.annotation.Components;
 import org.apache.pinot.thirdeye.detection.spec.RuleBaselineProviderSpec;
 import org.apache.pinot.thirdeye.detection.spi.components.BaselineProvider;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 import org.apache.pinot.thirdeye.detection.spi.model.InputData;
 import org.apache.pinot.thirdeye.detection.spi.model.InputDataSpec;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
 import org.apache.pinot.thirdeye.rootcause.timeseries.Baseline;
 
 import static org.apache.pinot.thirdeye.dataframe.util.DataFrameUtils.*;
@@ -43,9 +43,9 @@ public class RuleBaselineProvider implements BaselineProvider<RuleBaselineProvid
   private InputDataFetcher dataFetcher;
 
   @Override
-  public TimeSeries computePredictedTimeSeries(MetricSlice slice) {
+  public DetectionTimeSeries computePredictedTimeSeries(MetricSlice slice) {
     InputData data = this.dataFetcher.fetchData(new InputDataSpec().withTimeseriesSlices(this.baseline.scatter(slice)));
-    return TimeSeries.fromDataFrame(this.baseline.gather(slice, data.getTimeseries()));
+    return DetectionTimeSeries.fromDataFrame(this.baseline.gather(slice, data.getTimeseries()));
   }
 
   @Override

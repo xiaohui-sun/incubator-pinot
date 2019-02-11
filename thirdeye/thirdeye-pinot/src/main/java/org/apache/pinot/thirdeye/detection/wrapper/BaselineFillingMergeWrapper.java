@@ -28,6 +28,7 @@ import org.apache.pinot.thirdeye.datalayer.dto.DetectionConfigDTO;
 import org.apache.pinot.thirdeye.datalayer.dto.MergedAnomalyResultDTO;
 import org.apache.pinot.thirdeye.datalayer.dto.MetricConfigDTO;
 import org.apache.pinot.thirdeye.detection.DataProvider;
+import org.apache.pinot.thirdeye.detection.DetectionMode;
 import org.apache.pinot.thirdeye.detection.DetectionUtils;
 import org.apache.pinot.thirdeye.detection.DefaultInputDataFetcher;
 import org.apache.pinot.thirdeye.detection.InputDataFetcher;
@@ -126,6 +127,10 @@ public class BaselineFillingMergeWrapper extends MergeWrapper {
 
   @Override
   protected List<MergedAnomalyResultDTO> retrieveAnomaliesFromDatabase(List<MergedAnomalyResultDTO> generated) {
+    if (mode == DetectionMode.PREVIEW) {
+      return Collections.emptyList();
+    }
+
     AnomalySlice effectiveSlice = this.slice
         .withStart(this.getStartTime(generated) - this.maxGap - 1)
         .withEnd(this.getEndTime(generated) + this.maxGap + 1);
@@ -150,6 +155,10 @@ public class BaselineFillingMergeWrapper extends MergeWrapper {
    * @return anomalies with current and baseline value filled
    */
   List<MergedAnomalyResultDTO> fillCurrentAndBaselineValue(List<MergedAnomalyResultDTO> mergedAnomalies) {
+    if (mode == DetectionMode.PREVIEW) {
+      return mergedAnomalies;
+    }
+
     for (MergedAnomalyResultDTO anomaly : mergedAnomalies) {
       try {
         String metricUrn = anomaly.getMetricUrn();

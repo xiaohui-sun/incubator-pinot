@@ -72,7 +72,7 @@ import org.apache.pinot.thirdeye.datasource.loader.TimeSeriesLoader;
 import org.apache.pinot.thirdeye.detection.finetune.GridSearchTuningAlgorithm;
 import org.apache.pinot.thirdeye.detection.finetune.TuningAlgorithm;
 import org.apache.pinot.thirdeye.detection.spi.model.AnomalySlice;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.quartz.CronExpression;
@@ -228,6 +228,14 @@ public class DetectionResource {
     return Response.ok(gridSearch.bestDetectionConfig().getProperties()).build();
   }
 
+  /**
+   * Dry-run a pipeline for preview.
+   * In preview mode:
+   * 1. Do not load existing anomalies for merge.
+   * 2. Do not store generated anomalies.
+   *
+   * @throws Exception
+   */
   @POST
   @Path("/preview/{id}")
   public Response detectionPreview(
@@ -241,6 +249,7 @@ public class DetectionResource {
       throw new IllegalArgumentException("Detection Config not exist");
     }
 
+    config.setMode(DetectionMode.PREVIEW);
     DetectionPipeline pipeline = this.loader.from(this.provider, config, start, end);
     DetectionPipelineResult result = pipeline.run();
 
@@ -503,7 +512,8 @@ public class DetectionResource {
     if (metric == null) {
       throw new IllegalArgumentException(String.format("Could not resolve metric '%s' in dataset '%s' for anomaly id %d", anomaly.getMetric(), anomaly.getCollection(), anomaly.getId()));
     }
-    TimeSeries ts = DetectionUtils.getBaselineTimeseries(anomaly, Multimaps.forMap(anomaly.getDimensions()), metric.getId(), configDAO.findById(anomaly.getId()), start, end, loader, provider);
+    DetectionTimeSeries
+        ts = DetectionUtils.getBaselineTimeseries(anomaly, Multimaps.forMap(anomaly.getDimensions()), metric.getId(), configDAO.findById(anomaly.getId()), start, end, loader, provider);
     return Response.ok(ts.getDataFrame()).build();
   }
 

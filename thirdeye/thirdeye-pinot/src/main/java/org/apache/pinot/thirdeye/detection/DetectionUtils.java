@@ -38,7 +38,7 @@ import org.apache.pinot.thirdeye.detection.components.RuleBaselineProvider;
 import org.apache.pinot.thirdeye.detection.spec.RuleBaselineProviderSpec;
 import org.apache.pinot.thirdeye.detection.spi.components.BaseComponent;
 import org.apache.pinot.thirdeye.detection.spi.components.BaselineProvider;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -183,7 +183,7 @@ public class DetectionUtils {
    * @return baseline time series
    * @throws Exception
    */
-  public static TimeSeries getBaselineTimeseries(MergedAnomalyResultDTO anomaly, Multimap<String, String> filters, Long metricId, DetectionConfigDTO config,
+  public static DetectionTimeSeries getBaselineTimeseries(MergedAnomalyResultDTO anomaly, Multimap<String, String> filters, Long metricId, DetectionConfigDTO config,
       long start, long end, DetectionPipelineLoader loader, DataProvider provider) throws Exception {
     String baselineProviderComponentName = anomaly.getProperties().get(PROP_BASELINE_PROVIDER_COMPONENT_NAME);
     BaselineProvider baselineProvider = new RuleBaselineProvider();

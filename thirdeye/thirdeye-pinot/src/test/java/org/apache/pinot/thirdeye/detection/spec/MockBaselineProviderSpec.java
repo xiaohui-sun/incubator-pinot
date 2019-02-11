@@ -17,19 +17,19 @@
 package org.apache.pinot.thirdeye.detection.spec;
 
 import org.apache.pinot.thirdeye.dataframe.util.MetricSlice;
-import org.apache.pinot.thirdeye.detection.spi.model.TimeSeries;
+import org.apache.pinot.thirdeye.detection.spi.model.DetectionTimeSeries;
 import java.util.Map;
 
 
 public class MockBaselineProviderSpec extends AbstractSpec {
-  private Map<MetricSlice, TimeSeries> baselineTimeseries;
+  private Map<MetricSlice, DetectionTimeSeries> baselineTimeseries;
   private Map<MetricSlice, Double> aggregates;
 
-  public Map<MetricSlice, TimeSeries> getBaselineTimeseries() {
+  public Map<MetricSlice, DetectionTimeSeries> getBaselineTimeseries() {
     return baselineTimeseries;
   }
 
-  public void setBaselineTimeseries(Map<MetricSlice, TimeSeries> baselineTimeseries) {
+  public void setBaselineTimeseries(Map<MetricSlice, DetectionTimeSeries> baselineTimeseries) {
     this.baselineTimeseries = baselineTimeseries;
   }
 

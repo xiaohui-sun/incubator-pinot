@@ -60,12 +60,14 @@ public abstract class DetectionPipeline {
   protected final DetectionConfigDTO config;
   protected final long startTime;
   protected final long endTime;
+  protected DetectionMode mode;
 
   protected DetectionPipeline(DataProvider provider, DetectionConfigDTO config, long startTime, long endTime) {
     this.provider = provider;
     this.config = config;
     this.startTime = startTime;
     this.endTime = endTime;
+    this.mode = config.getMode();
     try {
       this.initComponents();
     } catch (Exception e) {

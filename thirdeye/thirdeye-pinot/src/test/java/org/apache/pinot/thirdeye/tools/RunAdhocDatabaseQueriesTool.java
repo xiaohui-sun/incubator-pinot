@@ -16,6 +16,7 @@
 
 package org.apache.pinot.thirdeye.tools;
 
+import java.util.Comparator;
 import org.apache.pinot.thirdeye.anomaly.task.TaskConstants;
 import org.apache.pinot.thirdeye.datalayer.bao.AlertConfigManager;
 import org.apache.pinot.thirdeye.datalayer.bao.AnomalyFunctionManager;
@@ -63,6 +64,7 @@ import org.apache.pinot.thirdeye.datalayer.dto.MergedAnomalyResultDTO;
 import org.apache.pinot.thirdeye.datalayer.dto.MetricConfigDTO;
 import org.apache.pinot.thirdeye.datalayer.dto.OverrideConfigDTO;
 import org.apache.pinot.thirdeye.datalayer.pojo.AlertConfigBean;
+import org.apache.pinot.thirdeye.datalayer.pojo.MergedAnomalyResultBean;
 import org.apache.pinot.thirdeye.datalayer.util.DaoProviderUtil;
 
 import org.apache.pinot.thirdeye.datalayer.util.Predicate;
@@ -79,6 +81,8 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.pinot.thirdeye.detection.alert.DetectionAlertFilterRecipients;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,6 +140,47 @@ public class RunAdhocDatabaseQueriesTool {
     anomalyFunction.setActive(true);
     anomalyFunctionDAO.update(anomalyFunction);
   }
+
+
+  /**
+   * Check trend change.
+   *
+   */
+  private void checkDailyTrendChange() {
+    DateTimeZone dateTimeZone = DateTimeZone.forID("America/Los_Angeles");
+
+    List<AnomalyFunctionDTO> functions = anomalyFunctionDAO.findAllByApplication("MVDD v2");
+    DateTime endDt;
+    int continuousDays = 0;
+    for (AnomalyFunctionDTO function : functions) {
+      List<MergedAnomalyResultDTO> results = mergedResultDAO.findByFunctionId(function.getId());
+      if (results.isEmpty()) {
+        continue;
+      }
+      Collections.sort(results, Comparator.comparingLong(MergedAnomalyResultBean::getStartTime));
+      // get end Date
+      int last = results.size() - 1;
+      DateTime startDt = new DateTime(results.get(last).getStartTime(), dateTimeZone);
+      endDt = new DateTime(results.get(last).getEndTime(), dateTimeZone);
+      continuousDays = endDt.getDayOfYear() - startDt.getDayOfYear();
+      // check if it is continuous anomaly from the last one
+      for (int i = results.size() - 2; i >= 0; i--) {
+        DateTime curStart = new DateTime(results.get(i).getStartTime(), dateTimeZone);
+        DateTime curEnd = new DateTime(results.get(i).getEndTime(), dateTimeZone);
+        if (startDt.getDayOfYear() == curEnd.getDayOfYear()) {
+          startDt = curStart;
+          continuousDays = curEnd.getDayOfYear() - curStart.getDayOfYear() + continuousDays;
+        } else {
+          break;
+        }
+      }
+      if (continuousDays > 5) {
+        LOG.info(String.format("Id = %d. end = %s, continuous = %d",
+            function.getId(), endDt.toString("yyyy-MM-dd"), continuousDays));
+      }
+    }
+  }
+
 
   /**
    * Removes the specified anomaly function and its anomalies and alert configs.
@@ -584,7 +629,8 @@ public class RunAdhocDatabaseQueriesTool {
       System.exit(1);
     }
     RunAdhocDatabaseQueriesTool dq = new RunAdhocDatabaseQueriesTool(persistenceFile);
-    dq.unsubscribedDetections();
+    //dq.unsubscribedDetections();
+    dq.checkDailyTrendChange();
     LOG.info("DONE");
   }
 
