@@ -20,8 +20,20 @@
 package org.apache.pinot.thirdeye.detection.spi.exception;
 
 public class DetectorDataWrongFormatException extends DetectorException {
-  public DetectorDataWrongFormatException(Exception ex) {
-    super(ex);
+  public DetectorDataWrongFormatException(Throwable cause) {
+    super(cause);
+  }
+
+  public DetectorDataWrongFormatException() {
+    super();
+  }
+
+  public DetectorDataWrongFormatException(String message) {
+    super(message);
+  }
+
+  public DetectorDataWrongFormatException(String message, Throwable cause) {
+    super(message, cause);
   }
 
   @Override
